@@ -1,12 +1,12 @@
 [hn]
-se-z43 users="andlt,duocnd,thienvv1,dungtv41,thanhnp15,ducnt69"
-nouvo-hn users="andlt,duocnd,thienvv1,dungtv41,thanhnp15,ducnt69"
-r282-z93 users="andlt,duocnd,thienvv1,dungtv41,thanhnp15,ducnt69"
+server1 users="user1,user2"
+server2 users="user1,user2"
+server3  users="user1,user2"
 
 [hcm]
-nouvo-hcm users="andlt,duocnd,thienvv1,dungtv41,thanhnp15,ducnt69"
+server4 users="user1,user2"
 
 [all:vars]
 # SSH User
 ansible_connection=ssh
-ansible_user=tiendm12
+ansible_user=ubuntu
