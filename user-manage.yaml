@@ -1,0 +1,49 @@
+---
+- name: Create users on specific hosts
+  hosts: all
+  become: yes
+  vars:
+    # Default users (can be overridden by host variables)
+    users: []
+  tasks:
+    - name: Ensure users exist
+      ansible.builtin.user:
+        name: "{{ item }}"
+        state: present
+        create_home: yes
+        shell: /bin/bash
+      loop: "{{ hostvars[inventory_hostname].users | default(users) | split(',') }}"
+
+    - name: Add users to the sudo group
+      ansible.builtin.user:
+        name: "{{ item }}"
+        groups: sudo
+        append: yes
+      loop: "{{ hostvars[inventory_hostname].users | default(users) | split(',') }}"
+
+    - name: Allow users to run sudo without a password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        line: "{{ item }} ALL=(ALL) NOPASSWD:ALL"
+        validate: "visudo -cf %s"
+        state: present
+      loop: "{{ hostvars[inventory_hostname].users | default(users) | split(',') }}"
+
+    - name: Ensure .ssh directory exists for each user
+      ansible.builtin.file:
+        path: "/home/{{ item }}/.ssh"
+        state: directory
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: "0700"
+      loop: "{{ hostvars[inventory_hostname].users | default(users) | split(',') }}"
+
+    - name: Add public keys to users' authorized_keys
+      ansible.builtin.lineinfile:
+        path: "/home/{{ item }}/.ssh/authorized_keys"
+        line: "{{ lookup('file', 'keys/' ~ item ~ '.pub') }}"
+        create: yes
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: "0600"
+      loop: "{{ hostvars[inventory_hostname].users | default(users) | split(',') }}"
